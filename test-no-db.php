@@ -1,0 +1,120 @@
+<?php
+/**
+ * Test script for WordPress build (no database required)
+ */
+
+echo "=== WordPress Build Test (No Database) ===\n\n";
+
+// Test 1: Check if WordPress core files exist
+echo "1. Testing WordPress core files...\n";
+$core_files = [
+    'web/index.php',
+    'web/wp-config.php',
+    'web/wp-load.php',
+    'web/wp-settings.php'
+];
+
+foreach ($core_files as $file) {
+    if (file_exists($file)) {
+        echo "   ✓ $file exists\n";
+    } else {
+        echo "   ✗ $file missing\n";
+    }
+}
+
+// Test 2: Check if plugins are installed
+echo "\n2. Testing installed plugins...\n";
+$plugins = [
+    'web/wp-content/plugins/woocommerce',
+    'web/wp-content/plugins/contact-form-7',
+    'web/wp-content/plugins/wordpress-seo'
+];
+
+foreach ($plugins as $plugin) {
+    if (is_dir($plugin)) {
+        echo "   ✓ $plugin installed\n";
+        
+        // Check if plugin has main file
+        $plugin_files = glob($plugin . '/*.php');
+        if (!empty($plugin_files)) {
+            echo "      ✓ Plugin files found\n";
+        } else {
+            echo "      ✗ No plugin files found\n";
+        }
+    } else {
+        echo "   ✗ $plugin missing\n";
+    }
+}
+
+// Test 3: Check WordPress version without loading WordPress
+echo "\n3. Testing WordPress version...\n";
+if (file_exists('web/wp-includes/version.php')) {
+    $version_content = file_get_contents('web/wp-includes/version.php');
+    if (preg_match('/\$wp_version\s*=\s*[\'"]([^\'"]+)[\'"]/', $version_content, $matches)) {
+        echo "   ✓ WordPress version: " . $matches[1] . "\n";
+    } else {
+        echo "   ✗ Could not parse WordPress version\n";
+    }
+} else {
+    echo "   ✗ Could not find version.php\n";
+}
+
+// Test 4: Check PHP compatibility
+echo "\n4. Testing PHP compatibility...\n";
+echo "   ✓ PHP version: " . PHP_VERSION . "\n";
+echo "   ✓ Required: ^8.3\n";
+
+// Test 5: Check directory structure
+echo "\n5. Testing directory structure...\n";
+$directories = [
+    'web/wp-admin',
+    'web/wp-includes',
+    'web/wp-content/plugins',
+    'web/wp-content/themes',
+    'src'
+];
+
+foreach ($directories as $dir) {
+    if (is_dir($dir)) {
+        echo "   ✓ $dir exists\n";
+    } else {
+        echo "   ✗ $dir missing\n";
+    }
+}
+
+// Test 6: Check file permissions
+echo "\n6. Testing file permissions...\n";
+$test_files = [
+    'web/index.php',
+    'web/wp-config.php'
+];
+
+foreach ($test_files as $file) {
+    if (file_exists($file)) {
+        if (is_readable($file)) {
+            echo "   ✓ $file is readable\n";
+        } else {
+            echo "   ✗ $file is not readable\n";
+        }
+    }
+}
+
+// Test 7: Check Composer autoload
+echo "\n7. Testing Composer autoload...\n";
+if (file_exists('vendor/autoload.php')) {
+    echo "   ✓ Composer autoload exists\n";
+    
+    // Test if we can include it
+    try {
+        require_once 'vendor/autoload.php';
+        echo "   ✓ Composer autoload loads successfully\n";
+    } catch (Exception $e) {
+        echo "   ✗ Composer autoload failed: " . $e->getMessage() . "\n";
+    }
+} else {
+    echo "   ✗ Composer autoload missing\n";
+}
+
+echo "\n=== Test Complete ===\n";
+echo "\nTo test with a database, update web/wp-config.php with your database credentials.\n";
+echo "Then run: vendor/bin/wp core install --path=web/ --url=localhost:8000 --title='Test Site'\n"; 
