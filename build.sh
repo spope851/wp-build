@@ -13,9 +13,12 @@ if [ $? -eq 0 ]; then
     echo ""
     echo "Next steps:"
     echo "1. Set up your database (MySQL/MariaDB)"
-    echo "2. Update web/wp-config.php with your database credentials"
-    echo "3. Start the development server: php -S localhost:8000 -t web/"
-    echo "4. Visit http://localhost:8000 to complete WordPress installation"
+    echo "2. Create web/wp-config.php from web/wp-config-sample.php"
+    echo "3. Update web/wp-config.php with your database credentials"
+    echo "4. Start the development server: php -S localhost:8000 -t web/"
+    echo "5. Visit http://localhost:8000 to complete WordPress installation"
+    echo ""
+    echo "Note: For deployment, your environment should handle wp-config.php"
 else
     echo "❌ Build failed! Please check the errors above."
     exit 1
