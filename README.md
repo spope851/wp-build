@@ -15,7 +15,7 @@ cd wp-build
 The build script does not generate `wp-config.php`. You need to:
 
 **For Development:**
-- Copy `web/wp-config-sample.php` to `web/wp-config.php`
+- Copy `wordpress/wp-config-sample.php` to `wordpress/wp-config.php`
 - Update database credentials and security keys
 
 **For Production/Deployment:**
@@ -24,7 +24,7 @@ The build script does not generate `wp-config.php`. You need to:
 
 ### 3. Start Development Server
 ```bash
-php -S localhost:8000 -t web/
+php -S localhost:8000 -t wordpress/
 ```
 
 Visit http://localhost:8000 to complete WordPress installation.
@@ -44,7 +44,7 @@ wp-build/
 │   ├── Utilities/        # Helper functions
 │   └── Features/         # Custom features
 ├── vendor/               # Composer packages (ignored)
-└── web/                  # WordPress installation (ignored)
+└── wordpress/            # WordPress installation (ignored)
     ├── wp-admin/         # WordPress admin
     ├── wp-includes/      # WordPress core
     ├── wp-content/       # Plugins and themes
@@ -131,7 +131,7 @@ The build script (`build.php`) does the following:
 
 1. **Cleans up**: Removes existing WordPress installation
 2. **Installs dependencies**: Runs `composer install`
-3. **Sets up structure**: Moves files to `web/` directory
+3. **Sets up structure**: Organizes files in `wordpress/` directory
 4. **Creates directories**: Sets up uploads, cache, etc.
 5. **Sets permissions**: Ensures proper file permissions
 6. **Verifies installation**: Checks all required files exist
@@ -141,7 +141,7 @@ The build script (`build.php`) does the following:
 ## 🚫 What's Ignored
 
 The `.gitignore` file excludes:
-- `web/` - Entire WordPress installation
+- `wordpress/` - Entire WordPress installation
 - `vendor/` - Composer packages
 - `composer.lock` - Optional (some teams commit this)
 - Uploads, cache, and logs

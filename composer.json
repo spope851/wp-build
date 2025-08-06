@@ -29,9 +29,9 @@
             "composer/installers": true
         },
         "installer-paths": {
-            "web/wp-content/plugins/{$name}/": ["type:wordpress-plugin"],
-            "web/wp-content/themes/{$name}/": ["type:wordpress-theme"],
-            "web/wp-content/mu-plugins/{$name}/": ["type:wordpress-muplugin"]
+            "wordpress/wp-content/plugins/{$name}/": ["type:wordpress-plugin"],
+            "wordpress/wp-content/themes/{$name}/": ["type:wordpress-theme"],
+            "wordpress/wp-content/mu-plugins/{$name}/": ["type:wordpress-muplugin"]
         }
     },
     "repositories": [

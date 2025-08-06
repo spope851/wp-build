@@ -8,9 +8,9 @@ echo "=== WordPress Build Test ===\n\n";
 // Test 1: Check if WordPress core files exist
 echo "1. Testing WordPress core files...\n";
 $core_files = [
-    'web/index.php',
-    'web/wp-load.php',
-    'web/wp-settings.php'
+    'wordpress/index.php',
+    'wordpress/wp-load.php',
+    'wordpress/wp-settings.php'
 ];
 
 foreach ($core_files as $file) {
@@ -24,9 +24,9 @@ foreach ($core_files as $file) {
 // Test 2: Check if plugins are installed
 echo "\n2. Testing installed plugins...\n";
 $plugins = [
-    'web/wp-content/plugins/woocommerce',
-    'web/wp-content/plugins/contact-form-7',
-    'web/wp-content/plugins/wordpress-seo'
+    'wordpress/wp-content/plugins/woocommerce',
+    'wordpress/wp-content/plugins/contact-form-7',
+    'wordpress/wp-content/plugins/wordpress-seo'
 ];
 
 foreach ($plugins as $plugin) {
@@ -39,8 +39,8 @@ foreach ($plugins as $plugin) {
 
 // Test 3: Check WordPress version
 echo "\n3. Testing WordPress version...\n";
-if (file_exists('web/wp-includes/version.php')) {
-    include 'web/wp-includes/version.php';
+if (file_exists('wordpress/wp-includes/version.php')) {
+    include 'wordpress/wp-includes/version.php';
     echo "   ✓ WordPress version: $wp_version\n";
 } else {
     echo "   ✗ Could not determine WordPress version\n";
@@ -54,10 +54,10 @@ echo "   ✓ Required: ^8.3\n";
 // Test 5: Check directory structure
 echo "\n5. Testing directory structure...\n";
 $directories = [
-    'web/wp-admin',
-    'web/wp-includes',
-    'web/wp-content/plugins',
-    'web/wp-content/themes',
+    'wordpress/wp-admin',
+    'wordpress/wp-includes',
+    'wordpress/wp-content/plugins',
+    'wordpress/wp-content/themes',
     'src'
 ];
 
