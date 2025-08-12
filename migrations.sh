@@ -24,68 +24,135 @@ else
     echo "Migrations table exists"
 fi
 
-# Get a list of all migration files (SQL files and plugin activation files)
-shopt -s nullglob
-all_migrations=(./migrations/*.sql ./migrations/activate-*)
+# Function to check if migration has been applied
+check_migration_applied() {
+    local migration_name="$1"
+    wp db query "SELECT COUNT(*) FROM dfs_migrations WHERE name='$migration_name'" --path="$WORDPRESS_PATH" --skip-column-names
+}
 
-# Process each migration file
-for migration in "${all_migrations[@]}"; do
-    # Get the migration name (filename without path)
-    migration_name="${migration##*/}"
+# Function to mark migration as applied
+mark_migration_applied() {
+    local migration_name="$1"
+    wp db query "INSERT INTO dfs_migrations (name) VALUES ('$migration_name')" --path="$WORDPRESS_PATH"
+}
+
+# Function to process plugin activation
+process_plugin_activation() {
+    local migration_name="$1"
+    local plugin_name="${migration_name#activate-}"
     
-    # Check if migration has been applied
-    applied=$(wp db query "SELECT COUNT(*) FROM dfs_migrations WHERE name='$migration_name'" --path="$WORDPRESS_PATH" --skip-column-names)
+    echo "Activating plugin: $plugin_name"
     
-    if [ "$applied" -eq "0" ]; then
-        echo "Running migration: $migration_name"
+    # Use WP-CLI to activate the plugin
+    wp plugin activate "$plugin_name" --path="$WORDPRESS_PATH"
+    
+    if [ $? -eq 0 ]; then
+        echo "Plugin $plugin_name activated successfully"
+        return 0
+    else
+        echo "Warning: Failed to activate plugin $plugin_name"
+        return 1
+    fi
+}
+
+# Function to process SQL migration
+process_sql_migration() {
+    local migration="$1"
+    local migration_name="$2"
+    
+    # Check if there's a matching PHP script to enhance the SQL
+    local php_script="./migrations/${migration_name%.sql}.php"
+    if [ -f "$php_script" ]; then
+        echo "Found PHP enhancement script: ${migration_name%.sql}.php"
         
-        # Check if this is a plugin activation migration
-        if [[ "$migration_name" == activate-* ]]; then
-            # Extract plugin name from filename (e.g., "activate-hello-dolly" -> "hello-dolly")
-            plugin_name="${migration_name#activate-}"
-            echo "Activating plugin: $plugin_name"
+        # Create a temporary enhanced SQL file
+        local temp_sql="/tmp/enhanced_${migration_name}"
+        
+        # Run the PHP script to generate enhanced SQL
+        php "$php_script" "$WORDPRESS_PATH" > "$temp_sql"
+        
+        if [ $? -eq 0 ]; then
+            echo "PHP script executed successfully, running enhanced SQL"
+            # Run the enhanced SQL migration
+            wp db query < "$temp_sql" --path="$WORDPRESS_PATH"
+            # Clean up temp file
+            rm "$temp_sql"
+            return 0
+        else
+            echo "Warning: PHP script failed, falling back to original SQL"
+            wp db query < "$migration" --path="$WORDPRESS_PATH"
+            return $?
+        fi
+    else
+        # Run as regular SQL migration
+        wp db query < "$migration" --path="$WORDPRESS_PATH"
+        return $?
+    fi
+}
+
+# Step 1: Process plugin activation migrations first
+echo ""
+echo "=== Step 1: Processing Plugin Activations ==="
+shopt -s nullglob
+plugin_migrations=(./migrations/activate-*)
+
+if [ ${#plugin_migrations[@]} -gt 0 ]; then
+    for migration in "${plugin_migrations[@]}"; do
+        migration_name="${migration##*/}"
+        
+        # Check if migration has been applied
+        applied=$(check_migration_applied "$migration_name")
+        
+        if [ "$applied" -eq "0" ]; then
+            echo "Running plugin activation: $migration_name"
             
-            # Use WP-CLI to activate the plugin
-            wp plugin activate "$plugin_name" --path="$WORDPRESS_PATH"
-            
-            if [ $? -eq 0 ]; then
-                echo "Plugin $plugin_name activated successfully"
+            if process_plugin_activation "$migration_name"; then
+                mark_migration_applied "$migration_name"
+                echo "Plugin activation completed: $migration_name"
             else
-                echo "Warning: Failed to activate plugin $plugin_name"
+                echo "Plugin activation failed: $migration_name"
             fi
         else
-            # Check if there's a matching PHP script to enhance the SQL
-            php_script="./migrations/${migration_name%.sql}.php"
-            if [ -f "$php_script" ]; then
-                echo "Found PHP enhancement script: ${migration_name%.sql}.php"
-                
-                # Create a temporary enhanced SQL file
-                temp_sql="/tmp/enhanced_${migration_name}"
-                
-                # Run the PHP script to generate enhanced SQL
-                php "$php_script" "$WORDPRESS_PATH" > "$temp_sql"
-                
-                if [ $? -eq 0 ]; then
-                    echo "PHP script executed successfully, running enhanced SQL"
-                    # Run the enhanced SQL migration
-                    wp db query < "$temp_sql" --path="$WORDPRESS_PATH"
-                    # Clean up temp file
-                    rm "$temp_sql"
-                else
-                    echo "Warning: PHP script failed, falling back to original SQL"
-                    wp db query < "$migration" --path="$WORDPRESS_PATH"
-                fi
-            else
-                # Run as regular SQL migration
-                wp db query < "$migration" --path="$WORDPRESS_PATH"
-            fi
+            echo "Skipping already applied plugin activation: $migration_name"
+        fi
+    done
+else
+    echo "No plugin activation migrations found"
+fi
+
+# Step 2: Process SQL data migrations
+echo ""
+echo "=== Step 2: Processing Data Migrations ==="
+sql_migrations=(./migrations/*.sql)
+
+if [ ${#sql_migrations[@]} -gt 0 ]; then
+    for migration in "${sql_migrations[@]}"; do
+        migration_name="${migration##*/}"
+        
+        # Skip seed.sql as it's handled separately
+        if [[ "$migration_name" == "seed.sql" ]]; then
+            continue
         fi
         
-        # Record that we've run this migration
-        wp db query "INSERT INTO dfs_migrations (name) VALUES ('$migration_name')" --path="$WORDPRESS_PATH"
+        # Check if migration has been applied
+        applied=$(check_migration_applied "$migration_name")
         
-        echo "Migration completed: $migration_name"
-    else
-        echo "Skipping already applied migration: $migration_name"
-    fi
-done
+        if [ "$applied" -eq "0" ]; then
+            echo "Running data migration: $migration_name"
+            
+            if process_sql_migration "$migration" "$migration_name"; then
+                mark_migration_applied "$migration_name"
+                echo "Data migration completed: $migration_name"
+            else
+                echo "Data migration failed: $migration_name"
+            fi
+        else
+            echo "Skipping already applied data migration: $migration_name"
+        fi
+    done
+else
+    echo "No SQL data migrations found"
+fi
+
+echo ""
+echo "=== Migration process completed ==="
