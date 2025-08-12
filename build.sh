@@ -9,6 +9,27 @@ echo "🚀 Starting WordPress build..."
 php build.php
 
 if [ $? -eq 0 ]; then
+    echo "📁 Copying migrations to WordPress build..."
+    
+    # Create migrations directory in WordPress if it doesn't exist
+    mkdir -p wordpress/migrations
+    
+    # Copy migrations directory contents
+    if [ -d "migrations" ]; then
+        cp -r migrations/* wordpress/migrations/
+        echo "✅ Migrations copied successfully"
+    else
+        echo "⚠️  Migrations directory not found"
+    fi
+    
+    # Copy migrations script
+    if [ -f "migrations.sh" ]; then
+        cp migrations.sh wordpress/migrations.sh
+        chmod +x wordpress/migrations.sh
+        echo "✅ Migrations script copied successfully"
+    else
+        echo "⚠️  Migrations script not found"
+    fi
     echo "✅ Build completed successfully!"
     echo ""
     echo "Next steps:"
