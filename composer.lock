@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "121630da3f5fd28a8710f05fdc97423b",
+    "content-hash": "5109e4a78314ea872bde3716bdcca94c",
     "packages": [
         {
             "name": "composer/installers",
@@ -657,6 +657,24 @@
             },
             "type": "wordpress-plugin",
             "homepage": "https://wordpress.org/plugins/contact-form-7/"
+        },
+        {
+            "name": "wpackagist-plugin/hello-dolly",
+            "version": "1.7.3",
+            "source": {
+                "type": "svn",
+                "url": "https://plugins.svn.wordpress.org/hello-dolly/",
+                "reference": "tags/1.7.3"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://downloads.wordpress.org/plugin/hello-dolly.1.7.3.zip"
+            },
+            "require": {
+                "composer/installers": "^1.0 || ^2.0"
+            },
+            "type": "wordpress-plugin",
+            "homepage": "https://wordpress.org/plugins/hello-dolly/"
         },
         {
             "name": "wpackagist-plugin/spenpo-resume",

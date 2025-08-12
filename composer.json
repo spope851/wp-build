@@ -9,7 +9,8 @@
         "wpackagist-plugin/woocommerce": "^10.0",
         "wpackagist-plugin/contact-form-7": "^6.1",
         "wpackagist-plugin/wordpress-seo": "^25.6",
-        "wpackagist-plugin/spenpo-resume": "^1.0"
+        "wpackagist-plugin/spenpo-resume": "^1.0",
+        "wpackagist-plugin/hello-dolly": "^1.7"
     },
     "license": "MIT",
     "autoload": {
