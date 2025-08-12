@@ -176,6 +176,128 @@ Your deployment environment should set:
 - [WordPress Codex](https://codex.wordpress.org/) - WordPress documentation
 - [Composer Documentation](https://getcomposer.org/doc/) - Composer documentation
 
+## 🔄 WordPress Migrations System
+
+The project includes a robust migration system for managing WordPress database changes. Migrations are automatically run during deployment to ensure consistent database state across environments.
+
+### Migration Types
+
+#### 1. SQL-Only Migrations
+Simple migrations that only require SQL statements. Just create a `.sql` file and it will run directly.
+
+**Example**: `migrations/create-users-table.sql`
+
+#### 2. Enhanced Migrations (PHP + SQL)
+Complex migrations that need serialized data or dynamic content. Create both a `.sql` file and a matching `.php` file.
+
+**Files needed**:
+- `migrations/migration-name.sql` - Base SQL statements
+- `migrations/migration-name.php` - PHP script that generates additional SQL
+
+#### 3. Plugin Activation Migrations
+Simple plugin activation without needing SQL or content. Just create a file starting with `activate-`.
+
+**Files needed**:
+- `migrations/activate-plugin-name` - No extension needed, no content required
+
+### How Enhanced Migrations Work
+
+1. **Detection**: The migration system automatically detects when both `.sql` and `.php` files exist
+2. **PHP Execution**: The PHP script runs first, generating additional SQL
+3. **SQL Enhancement**: The generated SQL is appended to the original SQL file
+4. **Execution**: The enhanced SQL file is executed
+5. **Cleanup**: Temporary files are automatically removed
+
+### Plugin Activation Migrations
+
+Plugin activation files are automatically detected and handled by WP-CLI:
+
+- **Naming Convention**: `activate-plugin-name` (no extension required)
+- **Content**: No content needed - the filename is sufficient
+- **Processing**: Automatically extracts plugin name and runs `wp plugin activate`
+- **Examples**: 
+  - `activate-hello-dolly` → activates "hello-dolly" plugin
+  - `activate-woocommerce` → activates "woocommerce" plugin
+
+### PHP Script Requirements
+
+Your PHP script must:
+- Accept command line arguments: `$argv[1]` = WordPress path
+- Output valid SQL statements to stdout
+- Exit with code 0 on success, non-zero on failure
+
+### Example Enhanced Migration
+
+#### `migrations/example-serialized-data.sql`
+```sql
+-- Basic table structure
+CREATE TABLE IF NOT EXISTS wp_example_data (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- PHP script will append serialized options here
+```
+
+#### `migrations/example-serialized-data.php`
+```php
+<?php
+// Generate serialized WordPress options
+$options = [
+    'my_setting' => ['enabled' => true, 'features' => ['a', 'b', 'c']]
+];
+
+foreach ($options as $name => $value) {
+    $serialized = serialize($value);
+    echo "INSERT INTO wp_options (option_name, option_value) VALUES ('$name', '$serialized');\n";
+}
+```
+
+### Best Practices
+
+1. **Keep SQL files simple** - Use them for basic structure
+2. **Use PHP for complex data** - Serialized data, dynamic content, complex logic
+3. **Plugin activation files** - No extension needed, no content required
+4. **Test locally** - Run migrations in development before production
+5. **Version control** - All migration files should be committed
+6. **Documentation** - Comment your PHP scripts clearly
+
+### Migration Execution Order
+
+Migrations are executed in alphabetical order by filename. Use numeric prefixes if you need specific ordering:
+- `001-create-tables.sql`
+- `002-add-data.sql`
+- `003-activate-plugins` (no extension needed)
+
+### File Naming Examples
+
+```
+migrations/
+├── seed.sql                           # Basic SQL migration (creates migrations table)
+├── create-tables.sql                  # SQL-only migration
+├── complex-data.sql                   # SQL migration
+├── complex-data.php                   # PHP enhancement script
+├── activate-hello-dolly              # Plugin activation (no extension)
+├── activate-woocommerce              # Plugin activation (no extension)
+└── activate-contact-form-7           # Plugin activation (no extension)
+```
+
+### Running Migrations
+
+Migrations are automatically run during deployment by your CI/CD pipeline:
+
+```bash
+./migrations.sh /path/to/wordpress
+```
+
+The script will:
+1. Check if the migrations table exists and create it if needed
+2. Run all pending migrations in alphabetical order
+3. Track which migrations have been applied
+4. Handle plugin activations automatically
+
+
 ## 🤝 Contributing
 
 1. Fork the repository

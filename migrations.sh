@@ -24,9 +24,9 @@ else
     echo "Migrations table exists"
 fi
 
-# Get a list of all migration files
+# Get a list of all migration files (SQL files and plugin activation files)
 shopt -s nullglob
-all_migrations=(./migrations/*.sql)
+all_migrations=(./migrations/*.sql ./migrations/activate-*)
 
 # Process each migration file
 for migration in "${all_migrations[@]}"; do
@@ -39,8 +39,47 @@ for migration in "${all_migrations[@]}"; do
     if [ "$applied" -eq "0" ]; then
         echo "Running migration: $migration_name"
         
-        # Run the migration
-        wp db query < "$migration" --path="$WORDPRESS_PATH"
+        # Check if this is a plugin activation migration
+        if [[ "$migration_name" == activate-* ]]; then
+            # Extract plugin name from filename (e.g., "activate-hello-dolly" -> "hello-dolly")
+            plugin_name="${migration_name#activate-}"
+            echo "Activating plugin: $plugin_name"
+            
+            # Use WP-CLI to activate the plugin
+            wp plugin activate "$plugin_name" --path="$WORDPRESS_PATH"
+            
+            if [ $? -eq 0 ]; then
+                echo "Plugin $plugin_name activated successfully"
+            else
+                echo "Warning: Failed to activate plugin $plugin_name"
+            fi
+        else
+            # Check if there's a matching PHP script to enhance the SQL
+            php_script="./migrations/${migration_name%.sql}.php"
+            if [ -f "$php_script" ]; then
+                echo "Found PHP enhancement script: ${migration_name%.sql}.php"
+                
+                # Create a temporary enhanced SQL file
+                temp_sql="/tmp/enhanced_${migration_name}"
+                
+                # Run the PHP script to generate enhanced SQL
+                php "$php_script" "$WORDPRESS_PATH" > "$temp_sql"
+                
+                if [ $? -eq 0 ]; then
+                    echo "PHP script executed successfully, running enhanced SQL"
+                    # Run the enhanced SQL migration
+                    wp db query < "$temp_sql" --path="$WORDPRESS_PATH"
+                    # Clean up temp file
+                    rm "$temp_sql"
+                else
+                    echo "Warning: PHP script failed, falling back to original SQL"
+                    wp db query < "$migration" --path="$WORDPRESS_PATH"
+                fi
+            else
+                # Run as regular SQL migration
+                wp db query < "$migration" --path="$WORDPRESS_PATH"
+            fi
+        fi
         
         # Record that we've run this migration
         wp db query "INSERT INTO dfs_migrations (name) VALUES ('$migration_name')" --path="$WORDPRESS_PATH"
