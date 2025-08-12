@@ -12,6 +12,18 @@ WORDPRESS_PATH="$1"
 echo "Running migrations"
 cd "$WORDPRESS_PATH"
 
+# Check if migrations table exists
+echo "Checking if migrations table exists"
+migrations_table_exists=$(wp db query "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'dfs_migrations'" --path="$WORDPRESS_PATH" --skip-column-names)
+
+if [ "$migrations_table_exists" -eq "0" ]; then
+    echo "Migrations table does not exist, creating it"
+    wp db import migrations/seed.sql --path="$WORDPRESS_PATH"
+    echo "Migrations table created"
+else
+    echo "Migrations table exists"
+fi
+
 # Get a list of all migration files
 shopt -s nullglob
 all_migrations=(./migrations/*.sql)
