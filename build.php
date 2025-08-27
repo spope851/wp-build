@@ -34,7 +34,7 @@ if (file_exists('composer.lock')) {
 echo "\n2. Installing Composer dependencies...\n";
 $composer_output = [];
 $composer_return = 0;
-exec('composer install', $composer_output, $composer_return);
+exec('composer install --prefer-dist', $composer_output, $composer_return);
 
 if ($composer_return !== 0) {
     echo "   ✗ Composer install failed!\n";
@@ -55,6 +55,14 @@ if (!is_dir('wordpress')) {
 if (is_dir('wp-content')) {
     system('mv wp-content wordpress/');
     echo "   ✓ Moved wp-content into wordpress/ directory\n";
+}
+
+// Fix symlinked local themes by copying actual files
+echo "   Fixing symlinked local themes...\n";
+if (is_link('wordpress/wp-content/themes/twenty-twenty-five-child')) {
+    system('rm wordpress/wp-content/themes/twenty-twenty-five-child');
+    system('cp -r src/themes/twenty-twenty-five-child wordpress/wp-content/themes/');
+    echo "   ✓ Copied twenty-twenty-five-child theme files\n";
 }
 
 echo "   ✓ WordPress files are in wordpress/ directory\n";

@@ -1,0 +1,15 @@
+{
+    "name": "spenpo/twenty-twenty-five-child",
+    "description": "Twenty Twenty-Five Child Theme",
+    "type": "wordpress-theme",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Spencer Pope",
+            "email": "spenpo@spenpo.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.4"
+    }
+}

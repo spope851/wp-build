@@ -40,17 +40,29 @@ mark_migration_applied() {
 process_plugin_activation() {
     local migration_name="$1"
     local plugin_name="${migration_name#activate-}"
+
+    # Check if it's a theme
+    if wp theme is-installed "$plugin_name" --path="$WORDPRESS_PATH" --quiet; then
+        echo "Activating theme: $plugin_name"
+        wp theme activate "$plugin_name" --path="$WORDPRESS_PATH"
+        return 0
+    fi
     
-    echo "Activating plugin: $plugin_name"
-    
-    # Use WP-CLI to activate the plugin
-    wp plugin activate "$plugin_name" --path="$WORDPRESS_PATH"
-    
-    if [ $? -eq 0 ]; then
-        echo "Plugin $plugin_name activated successfully"
+    # Check if plugin is installed before activating
+    if wp plugin is-installed "$plugin_name" --path="$WORDPRESS_PATH" --quiet; then
+        echo "Activating plugin: $plugin_name"
+        wp plugin activate "$plugin_name" --path="$WORDPRESS_PATH"
         return 0
     else
-        echo "Warning: Failed to activate plugin $plugin_name"
+        echo "Warning: $plugin_name is not installed, skipping activation"
+        return 1
+    fi
+    
+    if [ $? -eq 0 ]; then
+        echo "$plugin_name activated successfully"
+        return 0
+    else
+        echo "Warning: Failed to activate $plugin_name"
         return 1
     fi
 }
