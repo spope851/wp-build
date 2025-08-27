@@ -13,7 +13,8 @@
         "wpackagist-plugin/hello-dolly": "^1.7",
         "wpackagist-theme/twentytwentyfive": "^1.0",
         "spenpo/twenty-twenty-five-child": "dev-main",
-        "aws/aws-sdk-php": "^3.0"
+        "aws/aws-sdk-php": "^3.0",
+        "wpackagist-plugin/3d-flipbook-dflip-lite": "^2.3"
     },
     "license": "MIT",
     "autoload": {

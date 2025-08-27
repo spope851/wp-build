@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3e69eba88be31ae764131f57fccfabe9",
+    "content-hash": "2c2ad7e1e64a3ce1486ee4122da5c93b",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -1565,6 +1565,24 @@
             "time": "2025-05-07T01:16:12+00:00"
         },
         {
+            "name": "wpackagist-plugin/3d-flipbook-dflip-lite",
+            "version": "2.3.75",
+            "source": {
+                "type": "svn",
+                "url": "https://plugins.svn.wordpress.org/3d-flipbook-dflip-lite/",
+                "reference": "tags/2.3.75"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://downloads.wordpress.org/plugin/3d-flipbook-dflip-lite.2.3.75.zip"
+            },
+            "require": {
+                "composer/installers": "^1.0 || ^2.0"
+            },
+            "type": "wordpress-plugin",
+            "homepage": "https://wordpress.org/plugins/3d-flipbook-dflip-lite/"
+        },
+        {
             "name": "wpackagist-plugin/contact-form-7",
             "version": "6.1.1",
             "source": {
@@ -1620,15 +1638,15 @@
         },
         {
             "name": "wpackagist-plugin/woocommerce",
-            "version": "10.1.1",
+            "version": "10.1.2",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/woocommerce/",
-                "reference": "tags/10.1.1"
+                "reference": "tags/10.1.2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/woocommerce.10.1.1.zip"
+                "url": "https://downloads.wordpress.org/plugin/woocommerce.10.1.2.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
