@@ -36,7 +36,7 @@ mark_migration_applied() {
     wp db query "INSERT INTO dfs_migrations (name) VALUES ('$migration_name')" --path="$WORDPRESS_PATH"
 }
 
-# Function to process plugin activation
+# Function to process plugin or theme activation
 process_plugin_activation() {
     local migration_name="$1"
     local plugin_name="${migration_name#activate-}"

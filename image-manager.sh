@@ -35,7 +35,7 @@ case "$1" in
         
         echo ""
         if [ -d "src/uploads" ]; then
-            local_count=$(find src/uploads -type f -name "*.jpg" -o -name "*.jpeg" -o -name "*.png" -o -name "*.gif" -o -name "*.webp" | wc -l)
+            local_count=$(find src/uploads -type f -name "*.jpg" -o -name "*.jpeg" -o -name "*.png" -o -name "*.gif" -o -name "*.webp" -o -name "*.pdf" | wc -l)
             echo "Local images: $local_count"
         else
             echo "Local uploads directory not found"

@@ -213,7 +213,7 @@ class R2ImageSync {
     }
     
     private function isImageFile($file) {
-        $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'ico'];
+        $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'ico', 'pdf'];
         $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
         return in_array($extension, $imageExtensions);
     }
@@ -228,6 +228,7 @@ class R2ImageSync {
             'webp' => 'image/webp',
             'svg' => 'image/svg+xml',
             'ico' => 'image/x-icon',
+            'pdf' => 'application/pdf',
         ];
         
         return $mimeTypes[$extension] ?? 'application/octet-stream';

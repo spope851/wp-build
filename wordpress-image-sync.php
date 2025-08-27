@@ -31,7 +31,7 @@ foreach ($iterator as $file) {
     $relativePath = str_replace($uploadsDir . '/', '', $filePath);
     
     // Check if it's an image
-    $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'ico'];
+    $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'ico', 'pdf'];
     $extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
     
     if (!in_array($extension, $imageExtensions)) {
