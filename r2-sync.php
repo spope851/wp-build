@@ -129,7 +129,7 @@ class R2ImageSync {
     }
     
     public function downloadFromR2($dryRun = false) {
-        echo "📥 Downloading images from R2 to local...\n";
+        echo "📥 Downloading images from R2 to WordPress...\n";
         
         try {
             $objects = $this->s3Client->listObjects([
@@ -138,6 +138,7 @@ class R2ImageSync {
             ]);
             
             $downloaded = 0;
+            $registered = 0;
             
             foreach ($objects['Contents'] as $object) {
                 $r2Key = $object['Key'];
@@ -171,6 +172,12 @@ class R2ImageSync {
                     echo "   ✅ Downloaded: $relativePath\n";
                     $downloaded++;
                     
+                    // Register the image in WordPress database
+                    if ($this->registerImageInWordPress($relativePath, $localPath)) {
+                        $registered++;
+                        echo "   📝 Registered in WordPress: $relativePath\n";
+                    }
+                    
                 } catch (AwsException $e) {
                     echo "   ❌ Failed to download $relativePath: " . $e->getMessage() . "\n";
                 }
@@ -179,7 +186,7 @@ class R2ImageSync {
             if ($dryRun) {
                 echo "   🔍 Dry run complete. Would download " . count($objects['Contents']) . " files.\n";
             } else {
-                echo "   📊 Download complete: $downloaded downloaded\n";
+                echo "   📊 Download complete: $downloaded downloaded, $registered registered in WordPress\n";
             }
             
         } catch (AwsException $e) {
@@ -224,6 +231,67 @@ class R2ImageSync {
         ];
         
         return $mimeTypes[$extension] ?? 'application/octet-stream';
+    }
+    
+    /**
+     * Register an image in WordPress database as a media attachment
+     */
+    private function registerImageInWordPress($relativePath, $localPath) {
+        // Check if WordPress is loaded
+        if (!function_exists('wp_insert_attachment')) {
+            echo "   ⚠️  WordPress not loaded, skipping database registration\n";
+            return false;
+        }
+        
+        // Check if file already exists in database
+        $existingAttachment = $this->getAttachmentByPath($relativePath);
+        if ($existingAttachment) {
+            echo "   ℹ️  Image already registered: $relativePath\n";
+            return true;
+        }
+        
+        // Get file info
+        $fileType = wp_check_filetype(basename($localPath), null);
+        $attachment = array(
+            'post_mime_type' => $fileType['type'],
+            'post_title' => preg_replace('/\.[^.]+$/', '', basename($localPath)),
+            'post_content' => '',
+            'post_status' => 'inherit'
+        );
+        
+        // Insert the attachment
+        $attachId = wp_insert_attachment($attachment, $localPath);
+        
+        if (is_wp_error($attachId)) {
+            echo "   ❌ Failed to register image: " . $attachId->get_error_message() . "\n";
+            return false;
+        }
+        
+        // Generate attachment metadata (thumbnails, etc.)
+        require_once(ABSPATH . 'wp-admin/includes/image.php');
+        $attachData = wp_generate_attachment_metadata($attachId, $localPath);
+        wp_update_attachment_metadata($attachId, $attachData);
+        
+        return true;
+    }
+    
+    /**
+     * Check if an attachment already exists in the database
+     */
+    private function getAttachmentByPath($relativePath) {
+        global $wpdb;
+        
+        $filename = basename($relativePath);
+        $attachment = $wpdb->get_row(
+            $wpdb->prepare(
+                "SELECT ID FROM {$wpdb->posts} 
+                WHERE post_type = 'attachment' 
+                AND guid LIKE %s",
+                '%' . $wpdb->esc_like($filename) . '%'
+            )
+        );
+        
+        return $attachment;
     }
 }
 

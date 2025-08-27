@@ -35,8 +35,14 @@ if [ $? -eq 0 ]; then
     echo "🖼️  Fetching images from R2..."
     if [ -f "r2-sync.php" ]; then
         php r2-sync.php download
+        cp wordpress-image-sync.php wordpress/wordpress-image-sync.php
         if [ $? -eq 0 ]; then
             echo "✅ Images fetched successfully from R2"
+            
+            # Note about WordPress integration
+            echo "📝 Note: Images are now in wordpress/wp-content/uploads/"
+            echo "   To register them in WordPress database, run:"
+            echo "   wp eval-file wordpress-image-sync.php"
         else
             echo "⚠️  Image fetch failed, continuing with build..."
         fi
