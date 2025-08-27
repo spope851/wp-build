@@ -12,7 +12,8 @@
         "wpackagist-plugin/spenpo-resume": "^1.0",
         "wpackagist-plugin/hello-dolly": "^1.7",
         "wpackagist-theme/twentytwentyfive": "^1.0",
-        "spenpo/twenty-twenty-five-child": "dev-main"
+        "spenpo/twenty-twenty-five-child": "dev-main",
+        "aws/aws-sdk-php": "^3.0"
     },
     "license": "MIT",
     "autoload": {

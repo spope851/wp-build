@@ -79,12 +79,100 @@ This completely rebuilds the WordPress installation from Composer dependencies.
 - **Version controlled**: Only source code and configuration committed
 - **Deployment ready**: Environment handles WordPress configuration
 - **Development ready**: Debug mode enabled, file editing disabled
+- **R2 image storage**: Images stored in Cloudflare R2, not in git
 
 ## 📦 Installed Plugins
 
 - **WooCommerce**: E-commerce functionality
 - **Contact Form 7**: Contact forms
 - **Yoast SEO**: Search engine optimization
+
+## 🖼️ Image Management
+
+This project uses Cloudflare R2 for image storage instead of committing images to git. This keeps your repository lightweight while ensuring images are available during builds.
+
+### Setup
+1. **Environment Configuration**: Set your R2 credentials in one of these ways:
+
+   **For Local Development:**
+   ```bash
+   cp env.example .env
+   # Edit .env with your R2 credentials
+   ```
+
+   **For Production/CI/CD:**
+   Set these environment variables in your build environment:
+   ```bash
+   R2_ACCESS_KEY_ID=your_access_key
+   R2_SECRET_ACCESS_KEY=your_secret_key
+   R2_ENDPOINT=your_r2_endpoint
+   R2_BUCKET_NAME=your_bucket_name
+   ```
+
+2. **Install Dependencies**: The AWS SDK is included via Composer:
+   ```bash
+   composer install
+   ```
+
+### Managing Images
+
+#### Upload Local Images to R2
+```bash
+./image-manager.sh upload
+# or
+php r2-sync.php upload
+```
+
+#### Download Images from R2
+```bash
+./image-manager.sh download
+# or
+php r2-sync.php download
+```
+
+#### Check Image Status
+```bash
+./image-manager.sh status
+```
+
+#### Clean Local Uploads
+```bash
+./image-manager.sh clean
+```
+
+### Build Process Integration
+Images are automatically downloaded from R2 during the build process:
+```bash
+./build.sh
+```
+
+The build script will:
+1. Rebuild WordPress from Composer
+2. Fetch images from R2 to `src/uploads/`
+3. Copy images to the WordPress installation
+
+### Workflow
+1. **Development**: Add images to `src/uploads/` locally
+2. **Upload**: Run `./image-manager.sh upload` to sync to R2
+3. **Build**: Run `./build.sh` to fetch images and rebuild
+4. **Deployment**: Images are automatically available in production builds
+
+### Environment Variable Precedence
+The script follows this order for configuration:
+1. **System environment variables** (highest priority - for production/CI/CD)
+2. **`.env` file** (for local development)
+3. **Default values** (lowest priority)
+
+This means production builds can override local `.env` settings by setting environment variables.
+
+### File Structure
+```
+src/uploads/           # Local image development (gitignored)
+├── 2025/
+│   └── 08/
+│       └── image.png
+wordpress/wp-content/uploads/  # WordPress uploads (gitignored)
+```
 
 ## 🛠️ Custom Code
 

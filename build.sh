@@ -30,6 +30,20 @@ if [ $? -eq 0 ]; then
     else
         echo "⚠️  Migrations script not found"
     fi
+
+    # Image integration
+    echo "🖼️  Fetching images from R2..."
+    if [ -f "r2-sync.php" ]; then
+        php r2-sync.php download
+        if [ $? -eq 0 ]; then
+            echo "✅ Images fetched successfully from R2"
+        else
+            echo "⚠️  Image fetch failed, continuing with build..."
+        fi
+    else
+        echo "⚠️  R2 sync script not found, skipping image fetch..."
+    fi
+
     echo "✅ Build completed successfully!"
     echo ""
     echo "Next steps:"
